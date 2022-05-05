@@ -52,6 +52,16 @@ def update_task(task_id):
     return jsonify(task.to_JSON_response), 200
 
 
+@ tasks_bp.route("/<task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    task = get_task_or_abort(task_id)
+
+    db.session.delete(task)
+    db.session.commit()
+
+    return jsonify({"details": f'Task {task_id} "{task.title}" successfully deleted'}), 200
+
+
 def get_task_or_abort(task_id):
     try:
         task_id = int(task_id)
