@@ -5,11 +5,22 @@ from flask import Blueprint, jsonify, abort, make_response, request
 tasks_bp = Blueprint("tasks_bp", __name__, url_prefix="/tasks")
 
 
-@ tasks_bp.route("", methods=["GET"])
+@tasks_bp.route("", methods=["GET"])
 def read_all_tasks():
+
+    title_query = request.args.get("sort")
+    if title_query == "desc":
+        tasks = Task.query.order_by(Task.title.desc())
+    elif title_query == "asc":
+        tasks = Task.query.order_by(Task.title.asc())
+    else:
+        tasks = Task.query
+
     tasks_response = []
-    for task in Task.query:
+
+    for task in tasks:
         tasks_response.append(task.to_JSON_response["task"])
+
     return jsonify(tasks_response), 200
 
 
@@ -21,6 +32,7 @@ def read_one_task(task_id):
 
 @tasks_bp.route("", methods=["POST"])
 def create_task():
+
     title = request.json.get("title", None)
     description = request.json.get("description", None)
     if not title or not description:
@@ -37,6 +49,7 @@ def create_task():
 
 @ tasks_bp.route("/<task_id>", methods=["PUT"])
 def update_task(task_id):
+
     task = get_task_or_abort(task_id)
 
     title = request.json.get("title", None)
@@ -54,6 +67,7 @@ def update_task(task_id):
 
 @ tasks_bp.route("/<task_id>", methods=["DELETE"])
 def delete_task(task_id):
+
     task = get_task_or_abort(task_id)
 
     db.session.delete(task)
@@ -63,6 +77,7 @@ def delete_task(task_id):
 
 
 def get_task_or_abort(task_id):
+
     try:
         task_id = int(task_id)
     except:
