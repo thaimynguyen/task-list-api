@@ -11,3 +11,23 @@ def read_all_tasks():
     for task in Task.query:
         tasks_response.append(task.to_JSON_response["task"])
     return jsonify(tasks_response), 200
+
+
+@tasks_bp.route("/<task_id>", methods=["GET"])
+def read_one_task(task_id):
+    task = get_task_or_abort(task_id)
+    return jsonify(task.to_JSON_response), 200
+
+
+def get_task_or_abort(task_id):
+    try:
+        task_id = int(task_id)
+    except:
+        abort(make_response({"message": f"Task {task_id} invalid."}, 400))
+
+    task = Task.query.get(task_id)
+
+    if not task:
+        abort(make_response({"message": f"Task {task_id} not found."}, 404))
+
+    return task
