@@ -19,6 +19,22 @@ def read_one_task(task_id):
     return jsonify(task.to_JSON_response), 200
 
 
+@tasks_bp.route("", methods=["POST"])
+def create_task():
+    title = request.json.get("title", None)
+    description = request.json.get("description", None)
+    if not title or not description:
+        return jsonify({"details": "Invalid data"}), 400
+
+    new_task = Task(title=title,
+                    description=description)
+
+    db.session.add(new_task)
+    db.session.commit()
+
+    return jsonify(new_task.to_JSON_response), 201
+
+
 def get_task_or_abort(task_id):
     try:
         task_id = int(task_id)
