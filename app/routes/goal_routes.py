@@ -74,6 +74,30 @@ def delete_goal(goal_id):
     return jsonify({"details": f'Goal {goal_id} "{goal.title}" successfully deleted'}), 200
 
 
+
+@goals_bp.route("/<goal_id>/tasks", methods=["POST"])
+def post_task_ids_to_a_goal(goal_id):
+    
+    goal = get_goal_or_abort(goal_id)
+
+    task_ids = request.json.get("task_ids", None)
+    if not task_ids:
+        return jsonify({"details": "Invalid data"}), 400
+
+    # update each task with goal.goal_id
+    for task_id in task_ids:
+        task = Task.query.get(task_id)
+        task.goal_id = goal_id
+
+    db.session.commit()
+    
+    rsp = {
+        "id": goal.goal_id,
+        "task_ids": task_ids
+        }
+
+    return jsonify(rsp), 200
+
 def get_goal_or_abort(goal_id):
 
     try:
