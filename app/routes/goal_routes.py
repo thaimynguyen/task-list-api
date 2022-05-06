@@ -30,3 +30,18 @@ def read_one_goal(goal_id):
     goal = get_goal_or_abort(goal_id)
     return jsonify(goal.to_dict()), 200
 
+
+@goals_bp.route("", methods=["POST"])
+def create_goal():
+
+    title = request.json.get("title", None)
+    if not title:
+        return jsonify({"details": "Invalid data"}), 400
+
+    new_goal = Goal(title=title)
+
+    db.session.add(new_goal)
+    db.session.commit()
+
+    return jsonify(new_goal.to_dict()), 201
+
