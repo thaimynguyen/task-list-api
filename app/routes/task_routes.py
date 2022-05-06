@@ -19,7 +19,7 @@ def read_all_tasks():
     tasks_response = []
 
     for task in tasks:
-        tasks_response.append(task.to_JSON_response["task"])
+        tasks_response.append(task.to_dict()["task"])
 
     return jsonify(tasks_response), 200
 
@@ -27,7 +27,7 @@ def read_all_tasks():
 @tasks_bp.route("/<task_id>", methods=["GET"])
 def read_one_task(task_id):
     task = get_task_or_abort(task_id)
-    return jsonify(task.to_JSON_response), 200
+    return jsonify(task.to_dict()), 200
 
 
 @tasks_bp.route("", methods=["POST"])
@@ -44,7 +44,7 @@ def create_task():
     db.session.add(new_task)
     db.session.commit()
 
-    return jsonify(new_task.to_JSON_response), 201
+    return jsonify(new_task.to_dict()), 201
 
 
 @ tasks_bp.route("/<task_id>", methods=["PUT"])
@@ -62,7 +62,7 @@ def update_task(task_id):
 
     db.session.commit()
 
-    return jsonify(task.to_JSON_response), 200
+    return jsonify(task.to_dict()), 200
 
 
 @ tasks_bp.route("/<task_id>", methods=["DELETE"])

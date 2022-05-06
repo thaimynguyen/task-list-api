@@ -8,8 +8,7 @@ class Task(db.Model):
     description = db.Column(db.String)
     completed_at = db.Column(db.DateTime, nullable=True)
 
-    @property
-    def to_JSON_response(self):
+    def to_dict(self):
         payload = {
             "task": {
                 "id": self.task_id,
