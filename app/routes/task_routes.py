@@ -51,18 +51,20 @@ def create_task():
     return jsonify(new_task.to_dict()), 201
 
 
-@ tasks_bp.route("/<task_id>", methods=["PUT"])
+@tasks_bp.route("/<task_id>", methods=["PUT"])
 def update_task(task_id):
 
     task = get_task_or_abort(task_id)
 
     title = request.json.get("title", None)
     description = request.json.get("description", None)
+    completed_at = request.json.get("completed_at", None)
     if not title or not description:
         return jsonify({"details": "Invalid data"}), 400
 
     task.title = title
     task.description = description
+    task.completed_at = completed_at
 
     db.session.commit()
 
