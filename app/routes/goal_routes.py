@@ -45,3 +45,34 @@ def create_goal():
 
     return jsonify(new_goal.to_dict()), 201
 
+
+@goals_bp.route("/<goal_id>", methods=["PUT"])
+def update_goal(goal_id):
+
+    goal = get_goal_or_abort(goal_id)
+
+    title = request.json.get("title", None)
+
+    if not title:
+        return jsonify({"details": "Invalid data"}), 400
+
+    goal.title = title
+
+    db.session.commit()
+
+    return jsonify(goal.to_dict()["goal"]), 200
+
+
+def get_goal_or_abort(goal_id):
+
+    try:
+        goal_id = int(goal_id)
+    except:
+        abort(make_response({"message": f"Goal {goal_id} invalid."}, 400))
+
+    goal = Goal.query.get(goal_id)
+
+    if not goal:
+        abort(make_response({"message": f"Goal {goal_id} not found."}, 404))
+
+    return goal
