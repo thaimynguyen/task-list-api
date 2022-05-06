@@ -63,6 +63,17 @@ def update_goal(goal_id):
     return jsonify(goal.to_dict()["goal"]), 200
 
 
+@goals_bp.route("/<goal_id>", methods=["DELETE"])
+def delete_goal(goal_id):
+
+    goal = get_goal_or_abort(goal_id)
+
+    db.session.delete(goal)
+    db.session.commit()
+
+    return jsonify({"details": f'Goal {goal_id} "{goal.title}" successfully deleted'}), 200
+
+
 def get_goal_or_abort(goal_id):
 
     try:
