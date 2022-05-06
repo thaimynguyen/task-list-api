@@ -24,3 +24,9 @@ def read_all_goals():
 
     return jsonify(goals_response), 200
 
+
+@goals_bp.route("/<goal_id>", methods=["GET"])
+def read_one_goal(goal_id):
+    goal = get_goal_or_abort(goal_id)
+    return jsonify(goal.to_dict()), 200
+
