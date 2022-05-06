@@ -37,11 +37,13 @@ def create_task():
 
     title = request.json.get("title", None)
     description = request.json.get("description", None)
+    completed_at = request.json.get("completed_at", None)
     if not title or not description:
         return jsonify({"details": "Invalid data"}), 400
 
     new_task = Task(title=title,
-                    description=description)
+                    description=description,
+                    completed_at=completed_at)
 
     db.session.add(new_task)
     db.session.commit()
