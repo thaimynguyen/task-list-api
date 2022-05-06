@@ -98,6 +98,23 @@ def post_task_ids_to_a_goal(goal_id):
 
     return jsonify(rsp), 200
 
+
+@goals_bp.route("/<goal_id>/tasks", methods=["GET"])
+def get_tasks_of_one_goal(goal_id):
+
+    goal = get_goal_or_abort(goal_id)
+
+    payload = goal.to_dict()["goal"]
+    tasks = []
+
+    for task in goal.tasks:
+        tasks.append(task.to_dict()["task"])
+    
+    payload["tasks"] = tasks
+
+    return jsonify(payload), 200
+
+
 def get_goal_or_abort(goal_id):
 
     try:
