@@ -1,6 +1,7 @@
 from app import db
 from app.models.task import Task
 from app.routes.utils import slack_bot
+from app.routes.utils.helper import get_or_abort
 from flask import Blueprint, jsonify, abort, make_response, request
 from datetime import datetime
 
@@ -26,7 +27,7 @@ def read_all_tasks():
 
 @tasks_bp.route("/<task_id>", methods=["GET"])
 def read_one_task(task_id):
-    task = get_task_or_abort(task_id)
+    task = get_or_abort(Task, task_id)
     return jsonify(task.to_dict()), 200
 
 
@@ -52,7 +53,7 @@ def create_task():
 @tasks_bp.route("/<task_id>", methods=["PUT"])
 def update_task(task_id):
 
-    task = get_task_or_abort(task_id)
+    task = get_or_abort(Task, task_id)
 
     title = request.json.get("title", None)
     description = request.json.get("description", None)
@@ -72,7 +73,7 @@ def update_task(task_id):
 @tasks_bp.route("/<task_id>/mark_complete", methods=["PATCH"])
 def mark_task_as_complete(task_id):
 
-    task = get_task_or_abort(task_id)
+    task = get_or_abort(Task, task_id)
 
     task.completed_at = datetime.utcnow()
 
@@ -87,7 +88,7 @@ def mark_task_as_complete(task_id):
 @tasks_bp.route("/<task_id>/mark_incomplete", methods=["PATCH"])
 def mark_task_as_incomplete(task_id):
 
-    task = get_task_or_abort(task_id)
+    task = get_or_abort(Task, task_id)
 
     task.completed_at = None
 
@@ -99,24 +100,9 @@ def mark_task_as_incomplete(task_id):
 @tasks_bp.route("/<task_id>", methods=["DELETE"])
 def delete_task(task_id):
 
-    task = get_task_or_abort(task_id)
+    task = get_or_abort(Task, task_id)
 
     db.session.delete(task)
     db.session.commit()
 
     return jsonify({"details": f'Task {task_id} "{task.title}" successfully deleted'}), 200
-
-
-def get_task_or_abort(task_id):
-
-    try:
-        task_id = int(task_id)
-    except:
-        abort(make_response({"message": f"Task {task_id} invalid."}, 400))
-
-    task = Task.query.get(task_id)
-
-    if not task:
-        abort(make_response({"message": f"Task {task_id} not found."}, 404))
-
-    return task

@@ -1,6 +1,7 @@
 from app import db
 from app.models.goal import Goal
 from app.models.task import Task
+from app.routes.utils.helper import get_or_abort
 from flask import Blueprint, jsonify, abort, make_response, request
 
 
@@ -26,7 +27,7 @@ def read_all_goals():
 @goals_bp.route("/<goal_id>", methods=["GET"])
 def read_one_goal(goal_id):
     
-    goal = get_goal_or_abort(goal_id)
+    goal = get_or_abort(Goal, goal_id)
     
     return jsonify(goal.to_dict()), 200
 
@@ -49,7 +50,7 @@ def create_goal():
 @goals_bp.route("/<goal_id>", methods=["PUT"])
 def update_goal(goal_id):
 
-    goal = get_goal_or_abort(goal_id)
+    goal = get_or_abort(Goal, goal_id)
 
     title = request.json.get("title", None)
 
@@ -66,7 +67,7 @@ def update_goal(goal_id):
 @goals_bp.route("/<goal_id>", methods=["DELETE"])
 def delete_goal(goal_id):
 
-    goal = get_goal_or_abort(goal_id)
+    goal = get_or_abort(Goal, goal_id)
 
     db.session.delete(goal)
     db.session.commit()
@@ -78,7 +79,7 @@ def delete_goal(goal_id):
 @goals_bp.route("/<goal_id>/tasks", methods=["POST"])
 def post_task_ids_to_a_goal(goal_id):
     
-    goal = get_goal_or_abort(goal_id)
+    goal = get_or_abort(Goal, goal_id)
 
     task_ids = request.json.get("task_ids", None)
     if not task_ids:
@@ -102,25 +103,10 @@ def post_task_ids_to_a_goal(goal_id):
 @goals_bp.route("/<goal_id>/tasks", methods=["GET"])
 def get_tasks_of_one_goal(goal_id):
 
-    goal = get_goal_or_abort(goal_id)
+    goal = get_or_abort(Goal, goal_id)
 
     payload = goal.to_dict()["goal"]
     tasks = [task.to_dict()["task"] for task in goal.tasks]
     payload["tasks"] = tasks
 
     return jsonify(payload), 200
-
-
-def get_goal_or_abort(goal_id):
-
-    try:
-        goal_id = int(goal_id)
-    except:
-        abort(make_response({"message": f"Goal {goal_id} invalid."}, 400))
-
-    goal = Goal.query.get(goal_id)
-
-    if not goal:
-        abort(make_response({"message": f"Goal {goal_id} not found."}, 404))
-
-    return goal
