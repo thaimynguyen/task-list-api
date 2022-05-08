@@ -42,11 +42,11 @@ class Task(db.Model):
     def update_from_JSON_request(self):
         payload = get_JSON_request_body(request)
 
-        if "title" not in payload or "description" not in payload:
-            abort(make_response({"details": "Invalid data"}, 400))
-
-        self.title = payload["title"]
-        self.description = payload["description"]
+        if "title" in payload:
+            self.title = payload["title"]
+        
+        if "description" in payload:
+            self.description = payload["description"]
 
         if "completed_at" in payload:
             self.completed_at = payload["completed_at"]

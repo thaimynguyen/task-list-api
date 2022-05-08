@@ -33,6 +33,6 @@ def send_notification(text):
             retry_count += 1
             wait_time *= 2
         else:
-            pass
+            break
 
     return response

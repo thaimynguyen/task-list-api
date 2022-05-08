@@ -62,6 +62,11 @@ def test_get_goal_not_found(client):
     assert response_body["message"] == "Goal 1 not found."
     # ---- Complete Test ----
 
+def test_get_goal_with_invalid_id(client, one_goal):
+    response = client.get("/goals/one")
+    response_body = response.get_json()
+    assert response.status_code == 400
+    assert response_body["message"] == "Goal one invalid."
 
 # @pytest.mark.skip(reason="No way to test this feature yet")
 def test_create_goal(client):
@@ -119,6 +124,18 @@ def test_update_goal_not_found(client):
     assert response_body["message"] == "Goal 1 not found."
     # ---- Complete Assertions Here ----
 
+
+def test_update_goal_missing_title(client, one_goal):
+    response = client.put("/goals/1", json={})
+    response_body = response.get_json()
+    assert response.status_code == 400
+    assert response_body["details"] == "Invalid data"
+
+def test_update_goal_missing_JSON_request(client, one_goal):
+    response = client.put("/goals/1")
+    response_body = response.get_json()
+    assert response.status_code == 400
+    assert response_body["message"] == "Missing JSON request body."
 
 # @pytest.mark.skip(reason="No way to test this feature yet")
 def test_delete_goal(client, one_goal):
