@@ -1,8 +1,8 @@
-from flask import abort, make_response
+from flask import abort, make_response, request
 
 
 def get_or_abort(model, item_id):
-
+    
     try:
         item_id = int(item_id)
     except:

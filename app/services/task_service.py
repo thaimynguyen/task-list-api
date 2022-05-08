@@ -20,22 +20,20 @@ class TaskService:
                     goal_id=goal_id)
 
     def convert_task_to_dict(self, task: Task) -> dict:
-        payload = {
-            "task": {
-                "id": task.task_id,
-                "title": task.title,
-                "description": task.description,
-                "is_complete": False
-            }
+        task_as_dict = {
+            "id": task.task_id,
+            "title": task.title,
+            "description": task.description,
+            "is_complete": task.completed_at is not None
         }
 
-        if task.completed_at:
-            payload["task"]["is_complete"] = True
-
         if task.goal_id:
-            payload["task"]["goal_id"] = task.goal_id
+            task_as_dict["goal_id"] = task.goal_id
 
-        return payload
+        return task_as_dict
+
+    def create_a_task_payload(self, task):
+        return {"task": self.convert_task_to_dict(task)}
 
     def get_task_by_id(self, task_id) -> Task:
         try:
@@ -50,6 +48,9 @@ class TaskService:
                 {"message": f"Task {task_id} not found."}, 404))
 
         return task
+
+    def get_all_tasks(self):
+        return [self.convert_task_to_dict(task) for task in Task.query]
 
     def get_JSON_from_request(self, request):
         if not request.is_json:

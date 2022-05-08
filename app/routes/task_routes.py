@@ -19,10 +19,7 @@ def read_all_tasks():
     elif title_query == "asc":
         tasks = Task.query.order_by(Task.title.asc())
     else:
-        tasks = Task.query
-
-    tasks_response = [task_service.convert_task_to_dict(
-        task)["task"] for task in tasks]
+        tasks_response = task_service.get_all_tasks()
 
     return jsonify(tasks_response), 200
 
@@ -30,7 +27,7 @@ def read_all_tasks():
 @tasks_bp.route("/<task_id>", methods=["GET"])
 def read_one_task(task_id):
     task = task_service.get_task_by_id(task_id)
-    return jsonify(task_service.convert_task_to_dict(task)), 200
+    return jsonify(task_service.create_a_task_payload(task)), 200
 
 
 @tasks_bp.route("", methods=["POST"])
@@ -41,7 +38,7 @@ def create_task():
     db.session.add(new_task)
     db.session.commit()
 
-    return jsonify(task_service.convert_task_to_dict(new_task)), 201
+    return jsonify(task_service.create_a_task_payload(new_task)), 201
 
 
 @tasks_bp.route("/<task_id>", methods=["PUT"])
@@ -61,7 +58,7 @@ def update_task(task_id):
 
     db.session.commit()
 
-    return jsonify(task_service.convert_task_to_dict(task)), 200
+    return jsonify(task_service.create_a_task_payload(task)), 200
 
 
 @tasks_bp.route("/<task_id>/mark_complete", methods=["PATCH"])
@@ -76,7 +73,7 @@ def mark_task_as_complete(task_id):
     notification_text = f"Someone just completed the task {task.title}"
     slack_bot.send_notification(notification_text)
 
-    return jsonify(task_service.convert_task_to_dict(task)), 200
+    return jsonify(task_service.create_a_task_payload(task)), 200
 
 
 @tasks_bp.route("/<task_id>/mark_incomplete", methods=["PATCH"])
@@ -88,7 +85,7 @@ def mark_task_as_incomplete(task_id):
 
     db.session.commit()
 
-    return jsonify(task_service.convert_task_to_dict(task)), 200
+    return jsonify(task_service.create_a_task_payload(task)), 200
 
 
 @tasks_bp.route("/<task_id>", methods=["DELETE"])
