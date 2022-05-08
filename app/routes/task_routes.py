@@ -1,7 +1,7 @@
 from app import db
 from app.models.task import Task
 from app.routes.utils import slack_bot
-from app.routes.utils.helper import get_or_abort
+from app.routes.utils.helper import get_or_abort, get_JSON_request_body
 from flask import Blueprint, jsonify, abort, make_response, request
 from datetime import datetime
 
@@ -20,34 +20,28 @@ def read_all_tasks():
     else:
         tasks = Task.query
 
-    tasks_response = [task.to_dict()["task"] for task in tasks]
+    tasks_response = [task.to_JSON_response()["task"] for task in tasks]
 
     return jsonify(tasks_response), 200
 
 
 @tasks_bp.route("/<task_id>", methods=["GET"])
 def read_one_task(task_id):
+
     task = get_or_abort(Task, task_id)
-    return jsonify(task.to_dict()), 200
+
+    return jsonify(task.to_JSON_response()), 200
 
 
 @tasks_bp.route("", methods=["POST"])
 def create_task():
 
-    title = request.json.get("title", None)
-    description = request.json.get("description", None)
-    completed_at = request.json.get("completed_at", None)
-    if not title or not description:
-        return jsonify({"details": "Invalid data"}), 400
-
-    new_task = Task(title=title,
-                    description=description,
-                    completed_at=completed_at)
+    new_task = Task.from_JSON_request()
 
     db.session.add(new_task)
     db.session.commit()
 
-    return jsonify(new_task.to_dict()), 201
+    return jsonify(new_task.to_JSON_response()), 201
 
 
 @tasks_bp.route("/<task_id>", methods=["PUT"])
@@ -55,19 +49,11 @@ def update_task(task_id):
 
     task = get_or_abort(Task, task_id)
 
-    title = request.json.get("title", None)
-    description = request.json.get("description", None)
-    completed_at = request.json.get("completed_at", None)
-    if not title or not description:
-        return jsonify({"details": "Invalid data"}), 400
-
-    task.title = title
-    task.description = description
-    task.completed_at = completed_at
+    task.update_from_JSON_request()
 
     db.session.commit()
 
-    return jsonify(task.to_dict()), 200
+    return jsonify(task.to_JSON_response()), 200
 
 
 @tasks_bp.route("/<task_id>/mark_complete", methods=["PATCH"])
@@ -82,7 +68,7 @@ def mark_task_as_complete(task_id):
     notification_text = f"Someone just completed the task {task.title}"
     slack_bot.send_notification(notification_text)
 
-    return jsonify(task.to_dict()), 200
+    return jsonify(task.to_JSON_response()), 200
 
 
 @tasks_bp.route("/<task_id>/mark_incomplete", methods=["PATCH"])
@@ -94,7 +80,7 @@ def mark_task_as_incomplete(task_id):
 
     db.session.commit()
 
-    return jsonify(task.to_dict()), 200
+    return jsonify(task.to_JSON_response()), 200
 
 
 @tasks_bp.route("/<task_id>", methods=["DELETE"])
