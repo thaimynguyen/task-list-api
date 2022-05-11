@@ -1,6 +1,6 @@
 from app import db
 from app.models.task import Task
-from app.routes.utils import slack_bot
+from app.routes.utils.slack_bot import SlackClient
 from app.routes.utils.helper import get_or_abort, get_JSON_request_body
 from flask import Blueprint, jsonify, abort, make_response, request
 from datetime import datetime
@@ -65,8 +65,9 @@ def mark_task_as_complete(task_id):
 
     db.session.commit()
 
+    slack_client = SlackClient()
     notification_text = f"Someone just completed the task {task.title}"
-    slack_bot.send_notification(notification_text)
+    slack_client.send_notification(notification_text)
 
     return jsonify(task.to_JSON_response()), 200
 
